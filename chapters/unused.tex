@@ -1,0 +1,71 @@
+Een tweede probleem is de waaier aan verschillende applicaties die een reiziger moet bezitten voor het raadplegen van de realtime data en ticketinformatie. Verschillende \glspl{maasaanbieder} doen pogingen om die operatoren samen te brengen in één platform met als doel de reiziger een geïntegreerde ervaring te bieden. Door de afwezigheid van interoperabiliteit tussen de gegevens is dit een tijdsintensief en repetitief proces.
+
+%verplaatsen naar chapter:Verschillende_datamodellen?
+\begin{comment}
+\Glspl{mobop} bieden vandaag elk hun eigen platform aan om reizigers toegang te bieden tot hun service. Dit resulteert in een waaier aan verschillende applicaties voor het raadplegen van de beschikbaarheid en uurroosters van steps, fietsen, auto’s, bussen en treinen. Voor iedere mobiliteitsactiviteit dient de reiziger ook een gepast ticket of abonnement op zak te hebben, wat niet vanzelfsprekend is wanneer er maar sporadisch gebruik wordt gemaakt van de dienst. Verschillende \glspl{maasaanbieder} en routeplanners doen pogingen om die operatoren samen te brengen in één platform met als doel de reiziger een geïntegreerde ervaring te bieden.
+\end{comment}
+
+\begin{comment}
+Er moet worden onderzocht welke gegevens steden of gemeenten, waar de operator actief is, vereisen. De RDF ontologie moet op deze noden voorbereid zijn zodat de mapping volledig kan gebeuren en iedere service naadloos in eender welk platform kan worden geïmplementeerd.
+
+Een eerste aandachtspunt is dat er rekening moet worden gehouden met de locatie waar welke operator actief is en waar niet. Wanneer er een bepaalde operator geen overeenkomst heeft met een stad/gemeente en daar de service niet aangeboden wordt, mag de dienst niet zichtbaar zijn in de user interface. Ten tweede moeten er voorspellingen kunnen worden gedaan over wanneer er een vervoermiddel beschikbaar zal zijn in een specifieke parkeerplaats wanneer reserveren niet mogelijk is. Zo kan een reiziger weten of er een vervoermiddel ter beschikking zal zijn op het moment dat hij één nodig heeft.
+\end{comment}
+
+\chapter{Een eenduidig datamodel}
+\label{chap:eenduidig_datamodel}
+
+%\subsection{Meerdere partijen, eenzelfde datamodel}
+Zowel de mobiliteitsoperator als de stad/gemeente waar de operator zijn service wilt uitrollen hebben er belang bij samen te werken en te voldoen aan elkaars noden. Een stad/gemeente voorziet het grondgebied waar de operator actief wilt zijn en kan (deels) voorzien in de infrastructuur (stations, verkeersaanwijzingen, publicatie, ...) die nodig is voor een succesvolle werking en zo de opstart- en onderhoudskosten van een operator laag houden. Operatoren bieden met hun service een betere mobiliteit aan inwoners en daarmee een meer kwalitatieve leefomgeving. In het geval van grote steden kan een vlot mobiliteitsplan toeristen aantrekken en zorgen voor meer inkomsten voor de stad of minder verkeersdrukte tijdens piekuren.
+
+Deze sectie omschrijft een interoperabiliteitsmodel dat toepasbaar is op alle digitale Europese publieke services~\cite{neweif}. Dit model bestaat uit:
+\begin{enumerate}
+  \item vier interoperabiliteits-lagen: rechtsgeldig, organisatorisch, semantisch en technisch;
+  \item een geïntegreerde publieke service dat de vier lagen overspand;
+  \item een basis laag waarop het model wordt toegepast: een interoperabel bestuur.
+\end{enumerate}
+
+\todo[inline]{de vier lagen uitleggen}
+\textbf{Rechtsgeldige interoperabiliteit} maakt samenwerking mogelijk tussen organisaties die vallen onder een verschillend beleid en andere wettelijke afspraken. Op die manier worden publieke diensten tussen deelstaten van de EU niet belemmerd. \textbf{Organisatorische interoperabiliteit} heeft betrekking op de manier van werken binnen een organisatie. Die manier van werken moet goed gedocumenteerd en geïntegreerd zijn. \textbf{Semantische interoperabiliteit} zorgt ervoor dat gegevens die werden verzonden, wordt ontvangen verstaan zoals het bedoeld is. Deze laag bestaat uit enerzijds het semantisch aspect: 
+
+\begin{code}
+\begin{minted}[breaklines]{json}
+{
+    "@context": [
+        "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld",
+        {
+            "ext": "https://stijnbrysbaert.github.io/OSLO-extension/vocabulary.ttl#"
+        },
+        {
+            "example": "http://www.example.org/rdf#"
+        },
+        {
+            "geo": "http://www.w3.org/2003/01/geo/wgs84_pos#"
+        },
+        {
+            "locn": "http://www.w3.org/ns/locn#"
+        },
+        {
+            "Point": "geo:Point"
+        },
+        {
+            "availableBikeNumber": {
+                "@id": "example:availableBikeNumber"
+            }
+        },
+        {
+            "BikeHireDockingStation": {
+                "@id": "ext:Station"
+            }
+        },
+        {
+            "freeSlotNumber": {
+                "@id": "example:freeSlotNumber"
+            }
+        },
+        {
+            "location": "locn:geometry"
+        }
+    ]
+}
+\end{minted}
+\end{code}

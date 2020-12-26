@@ -1,0 +1,146 @@
+\chapter{Gegevens on-boarding}
+\label{chap:on-boarding}
+
+Het is moeilijk een gegevensmodel en -formaat te verplichten aan \glspl{mobop}. Het zou echter ideaal zijn mochten eigenaren van gegevens zelf hun gegevens in het gepaste RDF-model publiceren. Uit ervaring blijkt dat operatoren die deze gegevens produceren en publiceren geen middelen (tijd en geld) hebben of hierin willen investeren. De oplossing zit daarom niet in het overtuigen van die operatoren een bepaalde procedure te volgen bij het publiceren van hun gegevens. De Vlaamse overheid zal moeten investeren in een hulpmiddel om bestaande gegevens van operatoren te mappen naar een \acrshort{rdf}-model zodat het beschikbaar wordt als \acrshort{lod}~\cite{vernaillen}.
+
+Om gegevens rond \glspl{mobop} te linken met andere gegevens in Vlaanderen, werd de OSLO mobiliteit: trips \& aanbod ontologie uitgebreid (hoofdstuk ~\ref{chap:ontologie_voor_fietsdeeloperatoren}). Eens gegevens gepubliceerd worden conform die OSLO uitbreiding, zit het in de OSLO pijplijn. Deze pijplijn kan toegang bieden tot allerhande services die verdere bewerkingen uitvoeren op gegevens: archivering, bewaren en ophalen van historische gegevens, ... De pijplijn en eraan gekoppelde services zijn nog volop in ontwikkeling. Eens ze beschikbaar zijn, zijn ook de gegevens klaar om er gebruik van te maken. Deze scriptie en specifiek deze sectie beschrijft deze on-boarding: het mappen van niet OSLO conforme gegevens naar het wel OSLO conform zijn.
+
+In volgende secties zullen gegevenssets gepubliceerd met het GBFS en NGSI model gebruikt worden aangezien dit populaire specificaties zijn bij fietsdeeloperatoren.
+
+\section{RML.io}
+\label{sec:rml}
+JSON is een populair formaat voor het bewaren en versturen van gegevens. Het wordt meestal gebruikt als formaat om gegevens, opgevraagd via een API, terug te geven. Veel gebruikte gegevensmodellen om gegevens rond fietsdeeloperatoren te publiceren in JSON zijn GBFS en NGSI. GBFS werd reeds omschreven in sectie~\ref{sec:GBFS}. Voorbeelden zijn de velo.json (bijlage A) dat gebruikmaakt van NGSI. En donkey.json (bijlage B) dat gebruikmaakt van GBFS. 
+Een eerste use case om van deze gegevens Linked Data te genereren is door middel van de RML toolchain\footnote{\url{https://rml.io/}}. De eerste stap is het opbouwen van RML regels als tussenstap voor het genereren van LD. RML kan met YARRRML gegenereerd worden. Het codevoorbeeld in bijlage C is een YARRRML document waarmee de velo.json gegevensset uit bijlage A naar RML kan worden geserialiseerd.
+Daarna wordt door middel van een RMLMapper\footnote{\url{https://github.com/RMLio/rmlmapper-java}} uit de RML regels Linked Data gegenereerd\footnote{\url{https://github.com/stijnbrysbaert/mapper}}.
+
+\section{JSON naar JSON-LD}
+\label{sec:json2jsonld}
+Als tweede use case kan een JSON gegevensset omgevormd worden naar een JSON-LD formaat. JSON-LD brengt de mogelijkheid naar JSON om objecten aan elkaar te linken en te refereren naar andere objecten buiten het document met behulp van URIs (sectie ~\ref{sec:ngsi-ld}). 
+Er zijn enkele mogelijkheden om de @context op te bouwen die dit mogelijk maakt. Om te beginnen kunnen de sleutels van het JSON-object gemapt worden op voorlopige dummy URIs. Om te beginnen kan bijvoorbeeld de dummy URI \url{http://example.org/rdf#} als prefix worden gebruikt zoals in voorbeeld 1 (\ref{subsec:vb1}). Dit zorgt natuurlijk niet voor interoperabiliteit met andere gegevenssets, maar het geeft een idee van hoe de @context werkt.
+Als tweede stap is het mogelijk om bij simpele RDF modellen de URIs te gebruiken van dat RDF model. Met simpel wordt hier bedoeld dat een instantie van een RDF-klasse enkel relaties heeft van het subject naar een literal. Wanneer er instanties zijn die referenties hebben naar andere instanties van klasses, wordt het moeilijk dit zonder meer dan met een @context op te lossen.
+
+Wanneer de JSON bestaat uit één enkel object, kan de @context als extra object worden toegevoegd. Wanneer het om een array van objecten gaat, moeten die nodes gegroepeerd worden door middel van het `@included'-keyword. De array van objecten wordt toegevoegd aan een root-object, waartoe ook de @context behoort, met de sleutel @included.
+
+\subsection{Voorbeeld 1}
+\label{subsec:vb1}
+De @context in codevoorbeeld~\ref{code:context} kan worden gebruikt om het JSON-object in bijlage E te transformeren naar JSON-LD. Het is belangrijk de objecten met sleutels `id' en `type' toe te voegen aan de context om het geheel te laten werken. Het mapt de betreffende sleutels op de JSON-LD sleutelwoorden `@id' en `@type'. Op die manier zullen de sleutels worden geïnterpreteerd als respectievelijk het subject en het rdf:type object van de gegevensset.
+
+\begin{code}
+\begin{minted}[breaklines]{json}
+{
+    "@context": [
+        {
+            "ext": "https://stijnbrysbaert.github.io/OSLO-extension/vocabulary.ttl#"
+        },
+        {
+            "example": "http://www.example.org/rdf#"
+        },
+        {
+            "availableBikeNumber": {
+                "@id": "example:availableBikeNumber"
+            }
+        },
+        {
+            "freeSlotNumber": {
+                "@id": "example:freeSlotNumber"
+            }
+        },
+        {
+            "BikeHireDockingStation": {
+                "@id": "ext:Station"
+            }
+        },
+        {
+            "id": "@id"
+        },
+        {
+            "type": "@type"
+        }
+    ]
+}
+\end{minted}
+\caption{@context met dummy en werkelijke URIs}
+\label{code:context}
+\end{code}
+
+In deze context wordt als voorbeeld de sleutel ´BikeHireDockingStation' gemapt op ext:Station. Hiermee wordt aangetoond dat het mogelijk is ook URIs van eigen RDF-modellen te mappen op de sleutels van objecten. Simpele gegevenssets kunnen zo met enkel en alleen een @context gemapt worden naar een simpel RDF-model. 
+
+\subsection{Voorbeeld 2}
+\label{subsec:vb2}
+Om de JSON in bijlage D naar JSON-LD te transformeren is een extra @context nodig bovenop de context in \ref{code:context}. Deze JSON gegevensset maakt gebruik van een van de gegevensmodellen van de NGSI specificatie (Bike Hire Docking Station) en werd gepubliceerd in genormaliseerde vorm (\ref{sec:ngsi-ld}). Daarom is het belangrijk om de externe context \url{https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld} toe te voegen. Deze zal de sub-eigenschappen mappen op een URI zodat ze te queryen zijn. Zo zal bijvoorbeeld de sub-eigenschap `value' gemapt worden op URI \url{https://uri.etsi.org/ngsi-ld/hasValue}.
+Om problemen te vermijden bij het overschrijven van URIs die zijn opgenomen in de ngsi-ld core context, zet je deze context best bovenaan in het context-object.
+
+Gezien het NGSI gegevensmodel zal een CONSTRUCT-query nodig zijn om de sub-eigenschappen weg te werken. Deze CONSTRUCT-query zal RDF-triples genereren met de nodes die het in de WHERE-clausule van de SPARQL query uit de gegevensbron haalt. Het resultaat is een gegevensset gemapt naar het gewenste RDF model, in dit voorbeeld de uitbreiding op OSLO mobiliteit: trips \& aanbod. 
+
+\begin{code}
+\begin{minted}[breaklines]{sparql}
+PREFIX dct: <http://purl.org/dc/terms/>
+PREFIX example: <http://www.example.org/rdf#>
+PREFIX ext: <https://stijnbrysbaert.github.io/OSLO-extension/vocabulary.ttl#>
+PREFIX ngsild: <https://uri.etsi.org/ngsi-ld/>
+PREFIX trips: <https://data.vlaanderen.be/ns/mobiliteit/trips-en-aanbod#>
+
+CONSTRUCT{
+    ?s a ext:Station .
+    ?s trips:Transportobject.beschikbaarheid _:b .
+    _:b ext:voertuigTypesBeschikbaar _:items .
+    _:items a ext:VoertuigenBeschikbaar .
+    _:items ext:aantal ?aantal_bike .
+    _:b ext:voertuigDocksBeschikbaar _:docks .
+    _:docks a ext:DocksBeschikbaar .
+    _:docks ext:aantal ?aantal_slot .
+    _:items dct:type _:type .
+    _:type a trips:Resourcetype .
+    _:docks dct:type _:type .
+}
+WHERE {
+    ?s a ext:Station .
+    ?s example:availableBikeNumber ?obj_abn .
+    ?obj_abn ngsild:hasValue ?aantal_bike .
+    ?s example:freeSlotNumber ?obj_slot .
+    ?obj_slot ngsild:hasValue ?aantal_slot .
+}
+\end{minted}
+\caption{SPARQL query met CONSTRUCT-clausule}
+\label{code:construct}
+\end{code}
+
+In voorbeelden 1 en 2 werd bewust de `location'-eigenschap buiten beschouwing gelaten. Doordat de NGSI specificatie coördinaten in hun model implementeert aan de hand van GeoJSON is het niet mogelijk om met een SPARQL query individuele waarden te mappen op een specifieke URI. Dit komt doordat GeoJSON coördinaten bijhoudt in een array, terwijl het niet mogelijk is met een SPARQL query elementen uit een array te selecteren op basis van hun index. JSON-LD 1.1\footnote{\url{https://www.w3.org/TR/json-ld11/}} lost dit deels op met GeoJSON-LD\footnote{\url{https://geojson.org/geojson-ld/}}.
+Een andere oplossing hiervoor is gebruikmaken van de RML.io toolchain uit sectie \ref{sec:rml} dat wel overweg kan met arrays en hun indexen.
+
+\subsection{Voorbeeld 3}
+\label{subsec:vb3}
+In voorbeelden 1 en 2 werd telkens een gegevensset volgens het NGSI model gebruikt. In dit voorbeeld is het de beurt aan de GBFS specificatie met een gegevensset uit bijlage A: donkey.json. Om op deze set een SPARQL query te kunnen uitvoeren moet er opnieuw een @context worden toegevoegd zodat de JSON getransformeerd wordt naar JSON-LD. 
+Deze keer voegen we aan de @context het `@vocab'-sleutelwoord toe. Dit sleutelwoord zorgt er voor dat er een default vocabularium aan de context wordt toegevoegd. Alle eigenschappen en types, waarvoor geen andere URI in de context werd gespecificeerd, zullen dezelfde prefix krijgen.
+De sleutels in de JSON worden allen gemapt op een default URI met de prefix die werd meegegeven aan het @vocab-sleutelwoord, aangevuld met hun oorspronkelijke sleutel. Zonder meer kan deze JSON-LD nu worden gequeryd met volgende SPARQL query.
+
+\begin{code}
+\centering
+\begin{minted}[breaklines]{sparql}
+PREFIX default: <http://example.org/rdf#>
+
+SELECT ?s ?id ?items ?docks WHERE {
+    ?s default:fields ?fields .
+    ?fields default:station_id ?id .
+    ?fields default:num_bikes_available ?items .
+    ?fields default:num_docks_available ?docks .
+}
+\end{minted}
+\caption{SPARQL met NGSI-LD default context}
+\label{ngsild-default-context}
+\end{code}
+
+Opnieuw kan er met een aanvullende CONSTRUCT-clausule een gegevensset geconstrueerd worden volgens het gewenste RDF-model.
+
+\section{De mogelijkheden opgelijst}
+Met de RML.io toolchain kunnen vanuit verschillende gegevensformaten (CSV, JSON, XML) RML regels gegenereerd worden. In een tweede stap wordt met behulp van die RML regels Linked Data gegenereerd. In het YARRRML document kunnen functies worden toegevoegd aan subject, predicaten en objecten die de gegevens kunnen manipuleren voordat het naar een LD gegevensset gemapt wordt. In bijlage C - velo.yaml wordt er zo een functie gebruikt.
+
+Een simpelere manier, maar met beperktere mogelijkheid wegens het gebrek aan functies, is JSON-LD. Iedere JSON gegevensbron kan relatief gemakkelijk worden getransformeerd naar JSON-LD waardoor het te queryen is met SPARQL queries. In de @context kunnen de sleutels uit de JSON-objecten gemapt worden op URIs. De context kan op verschillende manieren met verschillende doeleinden worden opgebouwd door gebruik te maken van:
+
+\begin{itemize}
+    \item \textbf{default URIs} met behulp van het @vocab-sleutelwoord die daarna naar een definitief RDF-model geconstrueerd worden met een CONSTRUCT-query
+    \item \textbf{RDF-model URIs} zodat het direct te publiceren is als LD gegevensset
+    \item \textbf{NGSI-LD core context} wanneer een NGSI gegevensmodel wordt gebruikt. Deze context mapt de meta-gegevens van de object-eigenschappen naar gepaste URIs die daarna door middel van een CONSTRUCT-query naar het gewenste RDF-model kunnen worden gemapt
+\end{itemize}
+
+Afhankelijk van het formaat van de aangeleverde gegevensset en de eventuele manipulaties die er op moeten gebeuren is het tranformeren naar JSON-LD een snellere manier om de stap naar Linked Data te maken dan het gebruik van RML.

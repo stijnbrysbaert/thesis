@@ -1,0 +1,284 @@
+\begin{appendices}
+\section*{Bijlage A - donkey.json}
+\label{app:donkey.json}
+Snipit van een Donkey Republic gegevensset in JSON-formaat gehaald uit de open database van stad Gent\footnote{\url{https://data.stad.gent/explore/dataset/donkey-republic-beschikbaarheid-deelfietsen-per-station}}. Deze array bevat twee objecten die elk informatie over de status van dat station bijhouden.
+\begin{code}
+\begin{minted}[breaklines]{json}
+[
+    {
+        "datasetid": "donkey-republic-beschikbaarheid-deelfietsen-per-station",
+        "recordid": "62d9aa911167ba3f491f93f7ce7adfb530925c8f",
+        "fields": {
+            "last_reported": "1600650631",
+            "num_docks_available": 2,
+            "is_renting": 1,
+            "station_id": "12419",
+            "is_installed": 1,
+            "num_bikes_available": 1,
+            "is_returning": 1
+        },
+        "record_timestamp": "2020-12-21T19:30:03.126+01:00"
+    },
+    {
+        "datasetid": "donkey-republic-beschikbaarheid-deelfietsen-per-station",
+        "recordid": "fbbd057f9b0f507a7bd9b6200c3a71e2a12bbc97",
+        "fields": {
+            "last_reported": "1607735889",
+            "num_docks_available": 0,
+            "is_renting": 1,
+            "station_id": "16619",
+            "is_installed": 1,
+            "num_bikes_available": 3,
+            "is_returning": 1
+        },
+        "record_timestamp": "2020-12-21T19:30:03.126+01:00"
+    }
+]
+\end{minted}
+\end{code}
+
+\section*{Bijlage B - velo.json}
+\label{app:velo.json}
+Snipit van een gegevensset met Antwerpse Velo's, in JSON-formaat gehaald uit de 
+\begin{code}
+\begin{minted}[breaklines]{json}
+[
+    {
+        "id": "BikeHireDockingStation:Antwerpen:035",
+        "type": "BikeHireDockingStation",
+        "address": {
+            "type": "PostalAddress",
+            "value": {
+                "streetAddress": "cockerillkaai",
+                "postalCode": "2000",
+                "addressCountry": "BE"
+            },
+            "metadata": {}
+        },
+        "areaServed": {
+            "type": "Text",
+            "value": "Antwerpen",
+            "metadata": {}
+        },
+        "availableBikeNumber": {
+            "type": "Number",
+            "value": 8,
+            "metadata": {
+                "timestamp": {
+                    "type": "DateTime",
+                    "value": "2020-12-22T08:32:12.00Z"
+                }
+            }
+        },
+        "freeSlotNumber": {
+            "type": "Number",
+            "value": 28,
+            "metadata": {
+                "timestamp": {
+                    "type": "DateTime",
+                    "value": "2020-12-22T08:32:12.00Z"
+                }
+            }
+        },
+        "location": {
+            "type": "geo:json",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    4.3877,
+                    51.210318
+                ]
+            },
+            "metadata": {}
+        }
+]
+\end{minted}
+\end{code}
+
+\section*{Bijlage C - velo.yaml}
+\label{app:velo.yaml}
+
+\begin{code}
+\begin{minted}[breaklines]{yaml}
+prefixes:
+  ex: 'https://example.be#'
+  adr:  'https://data.vlaanderen.be/ns/adres#'
+  dienst: 'https://stijnbrysbaert.github.io/OSLO-extension/mobiliteitsdiensten.ttl#'
+  dc:   'http://purl.org/dc/terms/'
+  ext:  'https://stijnbrysbaert.github.io/OSLO-extension/vocabulary.ttl#'
+  foaf: 'http://xmlns.com/foaf/0.1/'
+  geo:  'http://www.w3.org/2003/01/geo/wgs84_pos#'
+  geonames: 'http://www.geonames.org/ontology#'
+  grel: 'http://users.ugent.be/~bjdmeest/function/grel.ttl#'
+  idlab-fn: 'http://example.com/idlab/function/'
+  locn: 'http://www.w3.org/ns/locn#'
+  mv:   'http://schema.mobivoc.org/'
+  prov: 'http://www.w3.org/ns/prov#'
+  rdf:  'http://www.w3.org/1999/02/22-rdf-syntax-ns#'
+  rdfs: 'http://www.w3.org/2000/01/rdf-schema#'
+  tn:   'https://data.vlaanderen.be/ns/transportnetwerk#'
+  trips: 'https://data.vlaanderen.be/ns/mobiliteit/trips-en-aanbod#'
+  xsd:  'http://www.w3.org/2001/XMLSchema#'
+
+mappings:
+  station:
+    sources:
+      - ['velo.json~jsonpath', '$.velos[*]']
+    s: ex:$(id)
+    po:
+      - [a, [ext:Station, dc:Location]]
+      - [rdfs:label, $(name.value)]
+      - p: locn:geometry
+        o:
+          mapping: location
+          condition:
+            function: equal
+            parameters:
+              - [str1, $(id)]
+              - [str2, $(id)]
+      - p: 'trips:Transportobject.beschikbaarheid'
+        o: 
+          mapping: status
+          condition:
+            function: equal
+            parameters:
+              - [str1, $(id)]
+              - [str2, $(id)]
+
+  location:
+    sources:
+      - ['velo.json~jsonpath', '$.velos[*]']
+    s: ex:location_$(id)
+    po:
+      - [a, geo:Point]
+      - [geo:long, '$(location.value.coordinates[0])']
+      - [geo:lat, '$(location.value.coordinates[1])']
+
+  voertuigenBeschikbaar:
+    sources:
+      - ['velo.json~jsonpath', '$.velos[*]']
+    s: ex:itemsAvailable_$(id)
+    po:
+      - [a, ext:VoertuigenBeschikbaar]
+      - [ext:aantal, $(availableBikeNumber.value)]
+      
+  docksBeschikbaar:
+    sources:
+      - ['velo.json~jsonpath', '$.velos[*]']
+    s: ex:docksAvailable_$(id)
+    po:
+      - [a, ext:DocksBeschikbaar]
+      - [ext:aantal, $(freeSlotNumber.value)]
+
+  status:
+    sources:
+      - ['velo.json~jsonpath', '$.velos[*]']
+    s: ex:status_$(id)
+    po:
+      - [a, trips:Beschikbaarheid]
+      - p: ext:voertuigTypesBeschikbaar
+        o:
+          mapping: voertuigenBeschikbaar
+          condition:
+            function: equal
+            parameters:
+              - [str1, $(id)]
+              - [str2, $(id)]
+      - p: ext:voertuigDocksBeschikbaar
+        o:
+          mapping: docksBeschikbaar
+          condition:
+            function: equal
+            parameters:
+              - [str1, $(id)]
+              - [str2, $(id)]
+      - [prov:generatedAtTime, $(availableBikeNumber.metadata.timestamp.value)]
+      - p: ext:actief
+        o:
+          value: "true"
+          datatype: "xsd:boolean"
+        condition:
+          function: idlab-fn:equal
+          parameters:
+            - [grel:valueParameter, $(status.value)]
+            - [grel:valueParameter2, "working"]
+      - p: ext:actief
+        o:
+          value: "false"
+          datatype: "xsd:boolean"
+        condition:
+          function: idlab-fn:notEqual
+          parameters:
+            - [grel:valueParameter, $(status.value)]
+            - [grel:valueParameter2, "working"]
+\end{minted}
+\end{code}
+
+\section*{Bijlage D - NGSI normalized}
+Genormaliseerd voorbeeld van een NGSI resultaat\footnote{\url{https://fiware-datamodels.readthedocs.io/en/latest/Transportation/Bike/BikeHireDockingStation/doc/spec/index.html}}.
+\begin{code}
+\begin{minted}[breaklines]{json}
+{
+    "id": "Bcn-BikeHireDockingStation-1",
+    "type": "BikeHireDockingStation",
+    "status": {
+        "value": "working"
+    },
+    "availableBikeNumber": {
+        "value": 20,
+        "metadata": {
+            "timestamp": {
+                "type": "DateTime",
+                "value": "2018-09-25T12:00:00"
+            }
+        }
+    },
+    "freeSlotNumber": {
+        "value": 10
+    },
+    "location": {
+        "type": "geo:json",
+        "value": {
+            "type": "Point",
+            "coordinates": [2.180042, 41.397952]
+        }
+    },
+    "address": {
+        "type": "PostalAddress",
+        "value": {
+            "addressCountry": "ES",
+            "addressLocality": "Barcelona",
+            "streetAddress": "Gran Via Corts Catalanes,760"
+        }
+    }
+}
+
+\end{minted}
+\end{code}
+
+\section*{Bijlage E - NGSI key-value paren}
+Een versimpelde weergave van een NGSI resultaat\footnote{\url{https://fiware-datamodels.readthedocs.io/en/latest/Transportation/Bike/BikeHireDockingStation/doc/spec/index.html}}, meestal gebruikt voor consumers en daarom zeer handig in gebruik voor de use cases in deze scriptie.
+\begin{code}
+\begin{minted}[breaklines]{json}
+{
+    "id": "malaga-bici-7",
+    "type": "BikeHireDockingStation",
+    "name": "07-Diputacion",
+    "location": {
+        "coordinates": [-4.43573, 36.699694],
+        "type": "Point"
+    },
+    "availableBikeNumber": 18,
+    "freeSlotNumber": 10,
+    "address": {
+        "streetAddress": "Paseo Antonio Banderas (Diputación)",
+        "addressLocality": "Malaga",
+        "addressCountry": "España"
+    },
+    "description": "Punto de alquiler de bicicletas próximo a Diputación",
+    "dateModified": "2017-05-09T09:25:55.00Z"
+}
+\end{minted}
+\end{code}
+
+\end{appendices}
