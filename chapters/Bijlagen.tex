@@ -37,6 +37,7 @@ Snipit van een Donkey Republic gegevensset in JSON-formaat gehaald uit de open d
 \end{minted}
 \end{code}
 
+\clearpage
 \section*{Bijlage B - velo.json}
 \label{app:velo.json}
 Snipit van een gegevensset met Antwerpse Velo's, in JSON-formaat gehaald uit de 
@@ -95,6 +96,7 @@ Snipit van een gegevensset met Antwerpse Velo's, in JSON-formaat gehaald uit de
 \end{minted}
 \end{code}
 
+\clearpage
 \section*{Bijlage C - velo.yaml}
 \label{app:velo.yaml}
 
@@ -214,6 +216,7 @@ mappings:
 \end{minted}
 \end{code}
 
+\clearpage
 \section*{Bijlage D - NGSI normalized}
 Genormaliseerd voorbeeld van een NGSI resultaat\footnote{\url{https://fiware-datamodels.readthedocs.io/en/latest/Transportation/Bike/BikeHireDockingStation/doc/spec/index.html}}.
 \begin{code}
@@ -256,6 +259,7 @@ Genormaliseerd voorbeeld van een NGSI resultaat\footnote{\url{https://fiware-dat
 \end{minted}
 \end{code}
 
+\clearpage
 \section*{Bijlage E - NGSI key-value paren}
 Een versimpelde weergave van een NGSI resultaat\footnote{\url{https://fiware-datamodels.readthedocs.io/en/latest/Transportation/Bike/BikeHireDockingStation/doc/spec/index.html}}, meestal gebruikt voor consumers en daarom zeer handig in gebruik voor de use cases in deze scriptie.
 \begin{code}
@@ -282,3 +286,43 @@ Een versimpelde weergave van een NGSI resultaat\footnote{\url{https://fiware-dat
 \end{code}
 
 \end{appendices}
+
+\clearpage
+\section*{Bijlage F - station\_status.json}
+Snipit uit een voorbeeld van de GBFS-specificatie voor het modelleren van de status van een station\footnote{\url{https://github.com/NABSA/gbfs/blob/master/gbfs.md\#station_statusjson}}.
+
+\begin{code}
+\begin{minted}[breaklines]{json}
+{
+  "last_updated": 1434054678,
+  "ttl": 0,
+  "version": "3.0",
+  "data": {
+    "stations": [
+      {
+        "station_id": "station 1",
+        "is_installed": true,
+        "is_renting": true,
+        "is_returning": true,
+        "last_reported": 1434054678,
+        "num_docks_available": 3,
+        "vehicle_docks_available": [{
+          "vehicle_type_ids": ["abc123"],
+          "count": 2
+        }, {
+          "vehicle_type_ids": ["def456"],
+          "count": 1
+        }],
+        "num_bikes_available": 1,
+        "vehicle_types_available": [{
+          "vehicle_type_id": "abc123",
+          "count": 1
+        }, {
+          "vehicle_type_id": "def456",
+          "count": 0
+        }]        
+      }
+   ]
+}
+\end{minted}
+\end{code}
